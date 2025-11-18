@@ -24,10 +24,22 @@ class TweetController extends Controller
             'content' => 'required|string|max:280',
         ]);
 
-        Tweet::create([
+        $data = [
             'user_id' => Auth::id(),
             'content' => $request->input('content'),
-        ]);
+        ];
+
+        // handle optional image upload
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => 'nullable|image|max:2048', // max 2MB
+            ]);
+
+            $path = $request->file('image')->store('tweets', 'public');
+            $data['image_path'] = $path;
+        }
+
+        Tweet::create($data);
 
         return redirect()->route('home')->with('success', 'Tweet posted successfully!');
     }

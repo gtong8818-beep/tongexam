@@ -7,11 +7,15 @@
     <!-- Create Tweet Form -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h3 class="text-xl font-bold mb-4">What's happening?</h3>
-        <form action="{{ route('tweets.store') }}" method="POST">
+        <form action="{{ route('tweets.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <textarea name="content" id="content" rows="3" maxlength="280" required
                 class="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="What's on your mind?"></textarea>
+            <div class="mt-3">
+                <label class="block text-sm text-gray-700 mb-1">Attach image (optional)</label>
+                <input type="file" name="image" accept="image/*" class="block w-full text-sm text-gray-600" />
+            </div>
             <div class="flex justify-between items-center mt-2">
                 <span id="charCount" class="text-sm text-gray-500">0 / 280</span>
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full">
@@ -56,6 +60,12 @@
                 </div>
 
                 <p class="text-gray-800 mb-4">{{ $tweet->content }}</p>
+
+                @if($tweet->image_path)
+                    <div class="mb-4">
+                        <img src="{{ asset('storage/' . $tweet->image_path) }}" alt="Tweet image" class="max-w-full h-auto rounded">
+                    </div>
+                @endif
 
                 <div class="flex items-center space-x-4">
                     <form action="{{ route('tweets.like', $tweet) }}" method="POST" class="like-form">

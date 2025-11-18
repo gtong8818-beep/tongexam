@@ -13,6 +13,7 @@ class Tweet extends Model
         'user_id',
         'content',
         'is_edited',
+        'image_path',
     ];
 
     protected $casts = [
