@@ -1,0 +1,5 @@
+*
+!.gitkeep
+!cache/
+!sessions/
+!views/
