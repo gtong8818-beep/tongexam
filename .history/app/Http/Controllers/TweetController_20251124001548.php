@@ -61,7 +61,44 @@ class TweetController extends Controller
             'is_edited' => true,
         ];
 
-        // Image uploads removed: updates no longer accept or process image files
+        // handle optional new image upload
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => 'nullable|image|max:5120', // up to 5MB
+            ]);
+
+            try {
+                // delete old image if exists
+                if ($tweet->image_path) {
+                    try {
+                        Storage::disk('public')->delete($tweet->image_path);
+                    } catch (\Exception $e) {
+                        // Try fallback deletion
+                        if (file_exists(public_path($tweet->image_path))) {
+                            unlink(public_path($tweet->image_path));
+                        }
+                    }
+                }
+
+                // Try to store using Storage facade first
+                $path = $request->file('image')->store('tweets', 'public');
+                $data['image_path'] = $path;
+            } catch (\Exception $e) {
+                // Fallback: store directly in public directory if storage fails
+                try {
+                    $tweetsDir = public_path('tweet_images');
+                    if (!file_exists($tweetsDir)) {
+                        mkdir($tweetsDir, 0755, true);
+                    }
+                    
+                    $imageName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+                    $request->file('image')->move($tweetsDir, $imageName);
+                    $data['image_path'] = 'tweet_images/' . $imageName;
+                } catch (\Exception $fallbackError) {
+                    \Log::error('Tweet image update failed (all methods): ' . $fallbackError->getMessage());
+                }
+            }
+        }
 
         $tweet->update($data);
 
