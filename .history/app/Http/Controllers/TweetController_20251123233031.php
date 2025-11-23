@@ -83,13 +83,20 @@ class TweetController extends Controller
 
             try {
                 // delete old image if exists
-                if ($tweet->image_path) {
-                    Storage::disk('public')->delete($tweet->image_path);
+                if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
+                    unlink(public_path($tweet->image_path));
                 }
 
-                // Store new image using Storage facade
-                $path = $request->file('image')->store('tweets', 'public');
-                $data['image_path'] = $path;
+                // Ensure directory exists
+                $tweetsDir = public_path('tweet_images');
+                if (!file_exists($tweetsDir)) {
+                    mkdir($tweetsDir, 0755, true);
+                }
+
+                // Save new image to public directory
+                $imageName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+                $request->file('image')->move($tweetsDir, $imageName);
+                $data['image_path'] = 'tweet_images/' . $imageName;
             } catch (\Exception $e) {
                 // Log error but don't fail the tweet update
                 \Log::error('Tweet image update failed: ' . $e->getMessage());
@@ -108,12 +115,8 @@ class TweetController extends Controller
         }
 
         // delete image if present
-        if ($tweet->image_path) {
-            try {
-                Storage::disk('public')->delete($tweet->image_path);
-            } catch (\Exception $e) {
-                \Log::error('Tweet image deletion failed: ' . $e->getMessage());
-            }
+        if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
+            unlink(public_path($tweet->image_path));
         }
 
         $tweet->delete();

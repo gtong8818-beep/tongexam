@@ -108,12 +108,8 @@ class TweetController extends Controller
         }
 
         // delete image if present
-        if ($tweet->image_path) {
-            try {
-                Storage::disk('public')->delete($tweet->image_path);
-            } catch (\Exception $e) {
-                \Log::error('Tweet image deletion failed: ' . $e->getMessage());
-            }
+        if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
+            unlink(public_path($tweet->image_path));
         }
 
         $tweet->delete();
