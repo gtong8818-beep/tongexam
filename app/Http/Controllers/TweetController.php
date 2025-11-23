@@ -156,10 +156,4 @@ class TweetController extends Controller
 
         return redirect()->route('home')->with('success', 'Tweet deleted successfully!');
     }
-        }
-
-        $tweet->delete();
-
-        return redirect()->route('home')->with('success', 'Tweet deleted successfully!');
-    }
 }
