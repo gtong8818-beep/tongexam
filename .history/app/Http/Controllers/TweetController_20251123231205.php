@@ -87,26 +87,15 @@ class TweetController extends Controller
                 'image' => 'nullable|image|max:5120', // up to 5MB
             ]);
 
-            try {
-                // delete old image if exists
-                if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
-                    unlink(public_path($tweet->image_path));
-                }
-
-                // Ensure directory exists
-                $tweetsDir = public_path('tweet_images');
-                if (!file_exists($tweetsDir)) {
-                    mkdir($tweetsDir, 0755, true);
-                }
-
-                // Save new image to public directory
-                $imageName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
-                $request->file('image')->move($tweetsDir, $imageName);
-                $data['image_path'] = 'tweet_images/' . $imageName;
-            } catch (\Exception $e) {
-                // Log error but don't fail the tweet update
-                \Log::error('Tweet image update failed: ' . $e->getMessage());
+            // delete old image if exists
+            if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
+                unlink(public_path($tweet->image_path));
             }
+
+            // Save new image to public directory
+            $imageName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+            $request->file('image')->move(public_path('tweet_images'), $imageName);
+            $data['image_path'] = 'tweet_images/' . $imageName;
         }
 
         $tweet->update($data);
