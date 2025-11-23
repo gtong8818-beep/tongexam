@@ -141,14 +141,7 @@ class TweetController extends Controller
             try {
                 Storage::disk('public')->delete($tweet->image_path);
             } catch (\Exception $e) {
-                // Try fallback deletion
-                if (file_exists(public_path($tweet->image_path))) {
-                    try {
-                        unlink(public_path($tweet->image_path));
-                    } catch (\Exception $fallbackError) {
-                        \Log::error('Tweet image deletion failed: ' . $fallbackError->getMessage());
-                    }
-                }
+                \Log::error('Tweet image deletion failed: ' . $e->getMessage());
             }
         }
 
