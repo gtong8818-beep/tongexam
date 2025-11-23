@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tweet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TweetController extends Controller
 {
@@ -77,14 +78,12 @@ class TweetController extends Controller
             ]);
 
             // delete old image if exists
-            if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
-                unlink(public_path($tweet->image_path));
+            if ($tweet->image_path) {
+                Storage::disk('public')->delete($tweet->image_path);
             }
 
-            // Save new image to public directory
-            $imageName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
-            $request->file('image')->move(public_path('tweet_images'), $imageName);
-            $data['image_path'] = 'tweet_images/' . $imageName;
+            $path = $request->file('image')->store('tweets', 'public');
+            $data['image_path'] = $path;
         }
 
         $tweet->update($data);
@@ -99,14 +98,8 @@ class TweetController extends Controller
         }
 
         // delete image if present
-        if ($tweet->image_path && file_exists(public_path($tweet->image_path))) {
-            unlink(public_path($tweet->image_path));
-        }
-
-        $tweet->delete();
-
-        return redirect()->route('home')->with('success', 'Tweet deleted successfully!');
-    }
+        if ($tweet->image_path) {
+            Storage::disk('public')->delete($tweet->image_path);
         }
 
         $tweet->delete();
