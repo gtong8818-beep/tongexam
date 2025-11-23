@@ -63,7 +63,7 @@
 
                 @if($tweet->image_path)
                     <div class="mb-4">
-                        <img src="{{ asset('storage/' . $tweet->image_path) }}" 
+                        <img src="{{ Storage::disk('public')->url($tweet->image_path) }}" 
                              alt="Tweet image" 
                              class="max-w-full h-auto rounded-lg shadow-md object-cover"
                              loading="lazy"
